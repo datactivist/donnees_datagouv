@@ -1,8 +1,7 @@
-## DEFIS DATA & TERRITOIRES, 4A SCIENCES PO ST GERMAIN EN LAYE
+## ENRICHISSEMENT DU RNE PAR LA COULEUR POLITIQUE DES MAIRES - 08/11/2024
 
 
-# Récupération des partis politiques à partir des noms des maires
-
+# Librairie
 library(tidyverse)
 
 # Import données RNE
@@ -36,7 +35,7 @@ tours <- bind_rows(tour1 |>
   select(-c(`NOM Prénom`, `Nom Prénom`)) |> 
   distinct()
 
-# Jointure : ajout des partis po au RNE
+# Jointure : ajout des partis politiques au RNE
 rne_enrichi <- rne_traite |> 
   left_join(tours |> select(`Code Nuance`, cog_nom_prenom), 
             by = "cog_nom_prenom") |> 
@@ -69,34 +68,4 @@ rne_enrichi <- rne_traite |>
 
 # Export
 rio::export(rne_enrichi, "2024/defis4A_SciencesPo/RNE_enrichi_couleur_politique.csv")
-
-
-
-
-#----- BROUILLON, RECHERCHE SQL WIKIDATA
-
-library(WikidataQueryServiceR)
-
-# Puisque les chefs ne sont pas tous à jour on récupère une liste générale de tous les politiciens français vivants et leur(s) parti(s) associé(s)
-wikidata_partis_po <- query_wikidata('SELECT DISTINCT ?chefLabel ?partiLabel
-WHERE {
-  ?chef wdt:P31 wd:Q5 .    #tous les êtres humains
-  ?chef wdt:P106 wd:Q82955 .    #on limite à ceux qui sont politiciens 
-  ?chef wdt:P27 wd:Q142  .    #on limite aux pers françaises
-  ?chef wdt:P102 ?parti .     #on recup le parti
-  ?chef wdt:P569 ?date .   #on recup la date de naissance
-  FILTER(YEAR(?date) > 1920).    #on trie pour ne garder que les politiciens "actuels" (moins de 100 ans)
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "fr". }
-}
-ORDER BY ?chefLabel ')
-
-# Matcher par le nom de l'élu 
-rne_enrichi <- rne |> 
-  mutate(chef_upper = stringi::stri_trans_general(str = gsub("-", " ", toupper(`Prenom.Nom.élu`)), id = "Latin-ASCII")) |> 
-  left_join(wikidata_partis_po |> 
-              mutate(chef_upper = stringi::stri_trans_general(str = gsub("-", " ", toupper(chefLabel)), id = "Latin-ASCII")))
-
-# Export des politiciens avec leur couleur politique
-rio::export(wikidata_partis_po, "~/Downloads/wikidata_partis_politiques.csv")
-
 
