@@ -67,5 +67,5 @@ rne_enrichi <- rne_traite |>
   arrange(cog_commune)
 
 # Export
-rio::export(rne_enrichi, "2024/defis4A_SciencesPo/RNE_enrichi_couleur_politique.csv")
+rio::export(rne_enrichi, "RNE_enrichi_couleurPo/RNE_enrichi_couleur_politique.csv")
 
