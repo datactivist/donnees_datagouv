@@ -64,7 +64,9 @@ rne_enrichi <- rne_traite |>
          nom_prenom_maire = nom_prenom,
          nuance_politique = `Code Nuance`) |> 
   relocate(nom_commune, cog_commune, siren_commune) |> 
-  arrange(cog_commune)
+  arrange(cog_commune) |> 
+    # suppression de données à caractère personnel
+  select(-nom_prenom_maire)
 
 # Export
 rio::export(rne_enrichi, "RNE_enrichi_couleurPo/RNE_enrichi_couleur_politique.csv")
